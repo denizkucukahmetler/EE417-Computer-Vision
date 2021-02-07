@@ -1,0 +1,53 @@
+function lab6OF(ImPrev,ImCurr,k,Threshold)
+% Smooth the input images using a Box filter
+
+
+gaussfilt = [9/16 9/8 9/16; 9/8 9/4 9/8; 9/16 9/8 9/16];
+smoothen_ImPrev = conv2(ImPrev, gaussfilt);
+smoothen_ImCurr = conv2(ImCurr, gaussfilt);
+
+
+%smoothen_ImPrev = imboxfilt(double(ImPrev),3);
+%smoothen_ImCurr = imboxfilt(double(ImCurr),3);
+
+% Calculate spatial gradients (Ix, Iy) using Prewitt filter
+X_filter = [ -1 0 1 ; -1 0 1; -1 0 1 ];
+Y_filter =  [-1 -1 -1 ; 0 0 0; 1 1 1];
+%Ix = conv2(smoothen_ImCurr,X_filter,"same");
+%Iy = conv2(smoothen_ImCurr,Y_filter,"same");
+
+
+% Calculate temporal (It) gradient
+It = smoothen_ImPrev - smoothen_ImCurr;
+
+[ydim,xdim] = size(ImCurr);
+Vx = zeros(ydim,xdim);
+Vy = zeros(ydim,xdim);
+G = zeros(2,2);
+b = zeros(2,1);
+for x=k+1:k:xdim-k-1
+    for y=k+1:k:ydim-k-1
+     % Calculate the elements of G and b
+     G(1,1)= sum(sum( Ix(y-k:y+k,x-k:x+k).^2 ));
+     G(1,2)= sum(sum(Ix(y-k:y+k,x-k:x+k).*Iy(y-k:y+k,x-k:x+k)));
+     G(2,1)= sum(sum(Ix(y-k:y+k,x-k:x+k).*Iy(y-k:y+k,x-k:x+k)));
+     G(2,2)= sum(sum( Iy(y-k:y+k,x-k:x+k).^2 ));
+
+     b(1,1)= sum(sum(Ix(y-k:y+k,x-k:x+k).*It(y-k:y+k,x-k:x+k)));
+     b(2,1)= sum(sum(Iy(y-k:y+k,x-k:x+k).*It(y-k:y+k,x-k:x+k)));
+
+    if (min(eig(G)) > Threshold)
+        % Calculate u
+        u = -1*(inv(G)* b);
+        Vx(y,x)=u(1);
+        Vy(y,x)=u(2);
+
+end
+end
+end
+cla reset;
+imagesc(ImPrev); hold on;
+[xramp,yramp] = meshgrid(1:1:xdim,1:1:ydim);
+quiver(xramp,yramp,Vx,Vy,10,'r');
+colormap gray;
+end
