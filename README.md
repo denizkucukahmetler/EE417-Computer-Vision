@@ -1,5 +1,5 @@
 # EE417 Computer Vision Course Sabancı University
-This repository includes all of the course content of Computer Vision Course at Sabancı University.
+This repository includes all of the course content of EE417 Computer Vision Course at Sabancı University.
 
 Semester: Fall 2020-2021
 
